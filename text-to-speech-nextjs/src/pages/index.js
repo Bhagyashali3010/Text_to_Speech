@@ -45,7 +45,7 @@ export default function Home() {
 
   const handleSubmit = async () => {
     try {
-      const response = await axios.post('/api/tts', {
+      const response = await axios.post('/api/tts-multi', {
         inputText,
         inputType,
         languageCode,
@@ -93,9 +93,23 @@ export default function Home() {
 
         <div className="mb-4">
           <label className="mr-2">Language:</label>
-          <select value={languageCode} onChange={(e) => setLanguageCode(e.target.value)} className="bg-gray-700 border-gray-600 text-white">
+          <select
+            value={languageCode}
+            onChange={(e) => setLanguageCode(e.target.value)}
+            className="bg-gray-700 border-gray-600 text-white"
+            >
             <option value="en-US">English (US)</option>
-            <option value="hi-IN">Hindi (IN)</option>
+            <option value="en-GB">English (UK)</option>
+            <option value="en-IN">English (India)</option>
+            <option value="es-ES">Spanish (Spain)</option>
+            <option value="pt-PT">Portuguese (Portugal)</option>
+            <option value="fr-FR">French (France)</option>
+            <option value="de-DE">German (Germany)</option>
+            <option value="hi-IN">Hindi (India)</option>
+            <option value="it-IT">Italian (Italy)</option>
+            <option value="ja-JP">Japanese</option>
+            <option value="ko-KR">Korean</option>
+            <option value="zh-CN">Chinese (Simplified)</option>
           </select>
         </div>
 
@@ -115,7 +129,7 @@ export default function Home() {
 
         <div className="mb-4">
           <label className="block mb-1">Speaking Rate: {rate}</label>
-          <input type="range" min="0.25" max="2" step="0.05" value={rate} onChange={(e) => setRate(parseFloat(e.target.value))} className="w-full" />
+          <input type="range" min="0.25" max="4" step="0.05" value={rate} onChange={(e) => setRate(parseFloat(e.target.value))} className="w-full" />
         </div>
 
         <button onClick={handleSubmit} className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Convert to Speech</button>
@@ -130,141 +144,3 @@ export default function Home() {
     </div>
   );
 }
-
-
-/*import { useState, useEffect } from "react";
-import axios from "axios";
-
-export default function Home() {
-  const [textInput, setTextInput] = useState("");
-  const [inputType, setInputType] = useState("text");
-  const [languageCode, setLanguageCode] = useState("en-US");
-  const [voices, setVoices] = useState([]);
-  const [voiceName, setVoiceName] = useState("");
-  const [pitch, setPitch] = useState(0);
-  const [rate, setRate] = useState(1);
-  const [audioSrc, setAudioSrc] = useState("");
-
-  useEffect(() => {
-    axios.get("/api/voices").then((res) => {
-      const filtered = res.data.filter((v) =>
-        v.languageCodes.includes(languageCode)
-      );
-      setVoices(filtered);
-      setVoiceName(filtered[0]?.name || "");
-    });
-  }, [languageCode]);
-
-  const synthesizeSpeech = async () => {
-    if (!textInput) return alert("Enter text or SSML!");
-
-    const response = await axios.post("/api/tts", {
-      inputText: textInput,
-      inputType,
-      languageCode,
-      voiceName,
-      pitch,
-      rate,
-    });
-
-    if (response.data.audioContent) {
-      setAudioSrc(`data:audio/mp3;base64,${response.data.audioContent}`);
-    }
-  };
-
-  return (
-    <div className="max-w-3xl mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold mb-4 text-center">Text to Speech App</h1>
-
-      <div className="flex items-center gap-3">
-        <span>Input Mode:</span>
-        <button
-          onClick={() => setInputType("text")}
-          className={`px-3 py-1 rounded ${inputType === "text" ? "bg-blue-600 text-white" : "bg-gray-200"}`}
-        >
-          Text
-        </button>
-        <button
-          onClick={() => setInputType("ssml")}
-          className={`px-3 py-1 rounded ${inputType === "ssml" ? "bg-blue-600 text-white" : "bg-gray-200"}`}
-        >
-          SSML
-        </button>
-      </div>
-
-      <textarea
-        className="w-full h-36 p-3 border rounded"
-        value={textInput}
-        onChange={(e) => setTextInput(e.target.value)}
-        placeholder="Enter your text or SSML here..."
-      />
-
-      <div>
-        <label className="block mb-1 font-semibold">Select Language:</label>
-        <select
-          className="w-full p-2 border rounded"
-          value={languageCode}
-          onChange={(e) => setLanguageCode(e.target.value)}
-        >
-          <option value="en-US">English (US)</option>
-          <option value="hi-IN">Hindi (India)</option>
-          <option value="en-IN">English (India)</option>
-        </select>
-      </div>
-
-      <div>
-        <label className="block mb-1 font-semibold">Select Voice:</label>
-        <select
-          className="w-full p-2 border rounded"
-          value={voiceName}
-          onChange={(e) => setVoiceName(e.target.value)}
-        >
-          {voices.map((v) => (
-            <option key={v.name} value={v.name}>
-              {v.name} ({v.ssmlGender})
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div>
-        <label className="block mb-1 font-semibold">Pitch: {pitch}</label>
-        <input
-          type="range"
-          min="-20"
-          max="20"
-          step="1"
-          value={pitch}
-          onChange={(e) => setPitch(Number(e.target.value))}
-          className="w-full"
-        />
-      </div>
-
-      <div>
-        <label className="block mb-1 font-semibold">Speaking Rate: {rate}</label>
-        <input
-          type="range"
-          min="0.25"
-          max="4.0"
-          step="0.05"
-          value={rate}
-          onChange={(e) => setRate(Number(e.target.value))}
-          className="w-full"
-        />
-      </div>
-
-      <button
-        onClick={synthesizeSpeech}
-        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-      >
-        Convert to Speech
-      </button>
-
-      {audioSrc && (
-        <audio controls className="w-full mt-4">
-          <source src={audioSrc} type="audio/mp3" />
-        </audio>
-      )}
-    </div>
-  );
-}*/
